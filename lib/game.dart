@@ -1,28 +1,20 @@
-import 'package:flame/components.dart';
 import 'package:flame/game.dart';
-import 'package:flame/text.dart';
 import 'package:flutter/material.dart';
+import 'maze.dart';
 
 class MazeRunnerGame extends FlameGame {
-  late SpriteComponent player;
-  late TextComponent textComponent;
+  late Maze maze;
 
   @override
   Future<void> onLoad() async {
-    super.onLoad();
+    await super.onLoad();
 
-    // Add text component
-    textComponent = TextComponent(
-      text: 'Maze Runner Game',
-      textRenderer: TextPaint(
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 24,
-        ),
-      ),
-      position: Vector2(10, 10),
-    );
-    add(textComponent);
+
+
+
+    // Add maze
+    maze = Maze(32, 20, 15, this);
+    add(maze);
   }
 
   @override
