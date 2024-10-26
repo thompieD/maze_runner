@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
-import 'game.dart'; // Import the game.dart file
+import 'game.dart';
 
 void main() {
   runApp(GameWidget(game: MazeRunnerGame()));
