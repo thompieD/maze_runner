@@ -1,0 +1,15 @@
+# Flutter/Dart specific files
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+pubspec.lock
+
+# IDE specific files
+.idea/
+.vscode/
+*.iml
+
+# Mac specific files
+.DS_Store
