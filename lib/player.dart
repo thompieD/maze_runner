@@ -4,6 +4,7 @@ import 'package:flame/game.dart';
 import 'package:flame/sprite.dart';
 import 'package:flame/collisions.dart';
 import 'package:maze_runner/enemy.dart';
+import 'package:maze_runner/game.dart';
 
 const int PATH_TILE = 0;
 const int WALL_TILE = 1;
@@ -59,7 +60,6 @@ class Player extends SpriteAnimationComponent with HasGameRef<FlameGame>, Keyboa
     hitbox = RectangleHitbox.relative(Vector2(1, 1), parentSize: size); 
     add(hitbox);
 
-    print('Player initial position: $position');
   }
 
   SpriteAnimation createCustomAnimation(SpriteSheet spriteSheet, {required int row, required double stepTime, required int from, required int to}) {
@@ -81,7 +81,6 @@ class Player extends SpriteAnimationComponent with HasGameRef<FlameGame>, Keyboa
       for (int x = 0; x < dungeon[y].length; x++) {
         // Check for path tile
         if (dungeon[y][x] == PATH_TILE) {
-          print('Found path tile at: ($x, $y)');
           return Vector2(x.toDouble() * tileSize, y.toDouble() * tileSize);
         }
       }
@@ -105,20 +104,17 @@ class Player extends SpriteAnimationComponent with HasGameRef<FlameGame>, Keyboa
       case PlayerState.idle:
         if (animation != idleAnimation) {
           animation = idleAnimation;
-          print('Switched to idle animation');
         }
         break;
       case PlayerState.running:
         if (animation != runAnimation) {
           animation = runAnimation;
-          print('Switched to run animation');
         }
         break;
       case PlayerState.damaged:
         if (animation != damageAnimation) {
           animation = damageAnimation;
           _isDamageAnimationPlaying = true;
-          print('Switched to damage animation');
           Future.delayed(Duration(seconds: 1), () {
             _isDamageAnimationPlaying = false;
             _state = PlayerState.idle; // Reset state to idle after damage animation
@@ -128,7 +124,6 @@ class Player extends SpriteAnimationComponent with HasGameRef<FlameGame>, Keyboa
       case PlayerState.attacking:
         if (animation != attackAnimation) {
           animation = attackAnimation;
-          print('Switched to attack animation');
           Future.delayed(Duration(seconds: 1), () {
             _state = PlayerState.idle; // Reset state to idle after attack animation
           });
@@ -136,7 +131,6 @@ class Player extends SpriteAnimationComponent with HasGameRef<FlameGame>, Keyboa
         break;
     }
 
-    print('player animation: ${animation.runtimeType}');
   }
 
   void handleInput(double dt) {
@@ -161,21 +155,24 @@ class Player extends SpriteAnimationComponent with HasGameRef<FlameGame>, Keyboa
       position.add(delta);
     }
   }
-
   void attack() {
     if (_state != PlayerState.attacking) {
       _state = PlayerState.attacking;
       animation = attackAnimation;
-      print('Player is attacking');
 
       // Check for nearby enemies and remove them
       final attackRange = tileSize.toDouble();
       gameRef.children.whereType<Enemy>().forEach((enemy) {
         if (position.distanceTo(enemy.position) <= attackRange) {
-          // make the enemy do an dead animation and remove it from the game
+          // Make the enemy do a dead animation and remove it from the game
           enemy.animation = enemy.deadAnimation;
           Future.delayed(Duration(milliseconds: 500), () {
-            gameRef.remove(enemy);
+            // Check if the enemy is still part of the game
+            if (enemy.parent != null) {
+              // Remove the enemy from the orc list
+              (gameRef as MazeRunnerGame).orcs.remove(enemy);
+              enemy.removeFromParent();
+            }
           });
         }
       });
@@ -187,31 +184,27 @@ class Player extends SpriteAnimationComponent with HasGameRef<FlameGame>, Keyboa
     }
   }
 
-  @override
-  bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
-    print('Key event: $event');
+    @override
+    bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
 
-    direction = Vector2.zero();
-    if (keysPressed.contains(LogicalKeyboardKey.arrowUp)) {
-      direction.y = -1;
+      direction = Vector2.zero();
+      if (keysPressed.contains(LogicalKeyboardKey.arrowUp)) {
+        direction.y = -1;
+      }
+      if (keysPressed.contains(LogicalKeyboardKey.arrowDown)) {
+        direction.y = 1;
+      }
+      if (keysPressed.contains(LogicalKeyboardKey.arrowLeft)) {
+        direction.x = -1;
+      }
+      if (keysPressed.contains(LogicalKeyboardKey.arrowRight)) {
+        direction.x = 1;
+      }
+      if (keysPressed.contains(LogicalKeyboardKey.space)) {
+        attack();
+      }
+      return true;
     }
-    if (keysPressed.contains(LogicalKeyboardKey.arrowDown)) {
-      direction.y = 1;
-    }
-    if (keysPressed.contains(LogicalKeyboardKey.arrowLeft)) {
-      direction.x = -1;
-    }
-    if (keysPressed.contains(LogicalKeyboardKey.arrowRight)) {
-      direction.x = 1;
-    }
-    if (keysPressed.contains(LogicalKeyboardKey.space)) {
-      attack();
-    }
-
-    print('Direction: $direction');
-
-    return true;
-  }
 
   // Getter for state
   PlayerState get playerState => _state;

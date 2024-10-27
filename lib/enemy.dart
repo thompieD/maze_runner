@@ -40,7 +40,6 @@ abstract class Enemy extends SpriteAnimationComponent with HasGameRef<FlameGame>
     // Set the initial position to a path tile
     position = findPathTile();
 
-    print('Enemy initial position: $position');
   }
 
   Future<SpriteSheet> loadSpriteSheet();
@@ -75,7 +74,6 @@ abstract class Enemy extends SpriteAnimationComponent with HasGameRef<FlameGame>
     final tileX = ((newPosition.x + size.x / 2) / tileSize).floor();
     final tileY = ((newPosition.y + size.y / 2) / tileSize).floor();
   
-    print('Attempting to move to: $newPosition, tile: ($tileX, $tileY)');
   
     if (tileX >= 0 && tileX < dungeon[0].length && tileY >= 0 && tileY < dungeon.length && dungeon[tileY][tileX] == PATH_TILE) {
       position.add(delta);
@@ -94,7 +92,7 @@ abstract class Enemy extends SpriteAnimationComponent with HasGameRef<FlameGame>
         player.lives -= 1;
         player.invincible = true;
         player.playerState = PlayerState.damaged;
-        Future.delayed(Duration(seconds: 1), () {
+        Future.delayed(Duration(seconds: 5), () {
           player.invincible = false;
           player.playerState = PlayerState.idle;
         });
@@ -103,7 +101,6 @@ abstract class Enemy extends SpriteAnimationComponent with HasGameRef<FlameGame>
       // Enemy is close enough to move towards the player
       _state = EnemyState.walking;
       final delta = (player.position - position).normalized() * speed * dt;
-      print('Moving enemy. Current position: $position, Player position: ${player.position}, Delta: $delta');
       move(delta);
     } else {
       _state = EnemyState.idle;
@@ -143,6 +140,5 @@ abstract class Enemy extends SpriteAnimationComponent with HasGameRef<FlameGame>
         break;
     }
 
-    print('enemy animation: ${animation.runtimeType}');
   }
 }
