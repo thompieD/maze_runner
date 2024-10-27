@@ -18,7 +18,7 @@ class Player extends SpriteAnimationComponent with HasGameRef<FlameGame>, Keyboa
   late SpriteAnimation idleAnimation;
   late SpriteAnimation runAnimation;
 
-  Player(this.dungeon, this.tileSize) : super(size: Vector2(tileSize.toDouble() * 5, tileSize.toDouble() * 5));
+  Player(this.dungeon, this.tileSize) : super(size: Vector2(tileSize.toDouble() * 5, tileSize.toDouble() * 5), priority: 0); // Set lower priority
 
   @override
   Future<void> onLoad() async {

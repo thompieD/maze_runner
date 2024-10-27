@@ -14,7 +14,7 @@ class MazeRunnerGame extends FlameGame with HasKeyboardHandlerComponents {
     await super.onLoad();
 
     // Add maze
-    maze = Maze(32, 30, 30, this);
+    maze = Maze(32, 50, 27, this);
     await add(maze);
 
     // Ensure the maze is fully loaded before adding the player
@@ -27,17 +27,7 @@ class MazeRunnerGame extends FlameGame with HasKeyboardHandlerComponents {
     print('Player added to the game');
   }
 
-  @override
-  void update(double dt) {
-    super.update(dt);
-    // Update game logic here
-  }
 
-  @override
-  void render(Canvas canvas) {
-    super.render(canvas);
-    // Render game elements here
-  }
 
   @override
   KeyEventResult onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
