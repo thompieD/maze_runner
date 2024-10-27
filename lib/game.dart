@@ -13,7 +13,6 @@ import 'orc.dart';
 import 'dart:math';
 import 'enemy_pool.dart';
 import 'movement_strategy.dart';
-
 import 'enemy.dart';
 
 class MazeRunnerGame extends FlameGame with HasKeyboardHandlerComponents, HasCollisionDetection {
@@ -26,6 +25,7 @@ class MazeRunnerGame extends FlameGame with HasKeyboardHandlerComponents, HasCol
   OverlayEntry? loseOverlay;
 
   final EnemyPool enemyPool = EnemyPool();
+  bool _musicStarted = false; // Flag to track if music has started
 
   MazeRunnerGame(this.context);
 
@@ -34,9 +34,9 @@ class MazeRunnerGame extends FlameGame with HasKeyboardHandlerComponents, HasCol
     await super.onLoad();
     debugMode = false;
 
-    // Load and play background music on loop
-    FlameAudio.bgm.initialize();
-    FlameAudio.loop('background_music.mp3', volume: 0.4);
+    // Add listener for user interaction to start background music
+    html.document.onClick.listen(_startBackgroundMusic);
+    html.document.onKeyDown.listen(_startBackgroundMusic);
 
     // Add maze
     maze = Maze(32, 50, 27, this);
@@ -77,6 +77,21 @@ class MazeRunnerGame extends FlameGame with HasKeyboardHandlerComponents, HasCol
     if (orcs.isEmpty) {
       print('You win');
       showWinScreen();
+    }
+  }
+
+  void _startBackgroundMusic(html.Event event) {
+    if (!_musicStarted) {
+      _musicStarted = true; // Set the flag to true to prevent multiple triggers
+
+      print('Starting background music');
+      // Remove listeners to prevent multiple triggers
+      html.document.onClick.listen(null).cancel();
+      html.document.onKeyDown.listen(null).cancel();
+
+      // Load and play background music on loop
+      FlameAudio.bgm.initialize();
+      FlameAudio.bgm.play('background_music.mp3');
     }
   }
 
