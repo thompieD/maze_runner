@@ -23,5 +23,12 @@ flutter:
     - assets/images/dungeon_tileset.png
     - assets/images/soldier.png
     - assets/images/orc.png
+    - assets/images/hearts.png
+    - assets/fonts/PublicPixel-rv0pA.ttf
+
+  fonts:
+    - family: PublicPixel
+      fonts:
+        - asset: assets/fonts/PublicPixel-rv0pA.ttf
 
   uses-material-design: true
