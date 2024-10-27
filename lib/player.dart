@@ -9,6 +9,7 @@ import 'package:flame/effects.dart';
 import 'package:flame/particles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flame/rendering.dart';
 import 'player_state.dart';
 import 'enemy.dart';
 import 'game.dart';
@@ -28,6 +29,8 @@ class Player extends SpriteAnimationComponent with HasGameRef<FlameGame>, Keyboa
   late SpriteAnimation runAnimation;
   late SpriteAnimation damageAnimation;
   late SpriteAnimation attackAnimation;
+
+  Matrix4 transformationMatrix = Matrix4.identity();  
 
   PlayerState _state = IdleState();
 
@@ -63,6 +66,14 @@ class Player extends SpriteAnimationComponent with HasGameRef<FlameGame>, Keyboa
       frames.add(SpriteAnimationFrame(customSprite, stepTime));
     }
     return SpriteAnimation(frames);
+  }
+
+  @override
+  void render(Canvas canvas) {
+    canvas.save();
+    canvas.transform(transformationMatrix.storage);
+    super.render(canvas);
+    canvas.restore();
   }
 
   Vector2 findPathTile() {
@@ -109,9 +120,12 @@ class Player extends SpriteAnimationComponent with HasGameRef<FlameGame>, Keyboa
     final tileX = ((newPosition.x + size.x / 2) / tileSize).floor();
     final tileY = ((newPosition.y + size.y / 2) / tileSize).floor();
 
-    if (tileX >= 0 && tileX < dungeon[0].length && tileY >= 0 && tileY < dungeon.length && dungeon[tileY][tileX] == PATH_TILE) {
-      add(MoveEffect.to(newPosition, EffectController(duration: 0.5)));
+    
+
+    if (tileX >= 0 && tileX < dungeon[0].length && tileY >= 0 && tileY < dungeon.length && dungeon[tileY][tileX] == PATH_TILE) {      
+        add(MoveEffect.to(newPosition, EffectController(duration: 0.5)));
     }
+
   }
 
   @override
@@ -135,13 +149,13 @@ class Player extends SpriteAnimationComponent with HasGameRef<FlameGame>, Keyboa
     return true;
   }
 
-   void attack() {
+    void attack() {
     if (_state is! AttackingState) {
       setState(AttackingState());
-
+  
       // Play sword swing sound effect
       audio.FlameAudio.play('swing.wav');
-
+  
       // Add particle effect
       final particle = ParticleSystemComponent(
         particle: Particle.generate(
@@ -163,7 +177,27 @@ class Player extends SpriteAnimationComponent with HasGameRef<FlameGame>, Keyboa
         ),
       );
       gameRef.add(particle);
+  
+      decorator.addLast(PaintDecorator.grayscale(opacity: 0.5));
 
+      // Make a size effect that makes the player slightly smaller
+      final shrinkEffect = SizeEffect.by(
+        Vector2(-5, -5), // Make the player slightly smaller
+        EffectController(duration: 0.5), // Shrink over 0.5 seconds
+      );
+
+      final growEffect = SizeEffect.by(
+        Vector2(5, 5), // Return to original size
+        EffectController(duration: 0.5), // Grow back over 0.5 seconds
+      );
+
+      final sequenceEffect = SequenceEffect([shrinkEffect, growEffect]);
+
+      add(sequenceEffect);
+
+      // Apply rotation
+      transformationMatrix.rotateZ(radians(10)); // Rotate 10 degrees to the right
+  
       final attackRange = tileSize.toDouble();
       gameRef.children.whereType<Enemy>().forEach((enemy) {
         if (position.distanceTo(enemy.position) <= attackRange) {
@@ -177,9 +211,13 @@ class Player extends SpriteAnimationComponent with HasGameRef<FlameGame>, Keyboa
           });
         }
       });
-
+  
       Future.delayed(Duration(seconds: 1), () {
         setState(IdleState());
+        decorator.removeLast();
+        
+        // Reset rotation
+        transformationMatrix.rotateZ(radians(-10)); // Rotate back to original position
       });
     }
   }
