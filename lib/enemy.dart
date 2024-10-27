@@ -3,7 +3,10 @@ import 'package:flame/game.dart';
 import 'package:flame/sprite.dart';
 import 'package:flame/collisions.dart';
 import 'dart:math';
+import 'maze.dart';
 import 'player.dart';
+import 'movement_strategy.dart';
+import 'player_state.dart'; 
 
 enum EnemyState { idle, walking, attacking, dead }
 
@@ -18,10 +21,12 @@ abstract class Enemy extends SpriteAnimationComponent with HasGameRef<FlameGame>
   late Player player; 
 
   EnemyState _state = EnemyState.idle;
-  bool _isAttackAnimationPlaying = false;
+  final bool _isAttackAnimationPlaying = false;
   bool _isDeadAnimationPlaying = false;
 
-  Enemy(this.speed, this.tileSize, this.dungeon, this.player) : super(size: Vector2(tileSize.toDouble(), tileSize.toDouble()), priority: 0);
+  MovementStrategy movementStrategy;
+
+  Enemy(this.movementStrategy, this.speed, this.tileSize, this.dungeon, this.player) : super(size: Vector2(tileSize.toDouble(), tileSize.toDouble()), priority: 0);
 
   @override
   Future<void> onLoad() async {
@@ -39,7 +44,6 @@ abstract class Enemy extends SpriteAnimationComponent with HasGameRef<FlameGame>
 
     // Set the initial position to a path tile
     position = findPathTile();
-
   }
 
   Future<SpriteSheet> loadSpriteSheet();
@@ -69,20 +73,10 @@ abstract class Enemy extends SpriteAnimationComponent with HasGameRef<FlameGame>
     }
   }
 
-  void move(Vector2 delta) {
-    final newPosition = position + delta;
-    final tileX = ((newPosition.x + size.x / 2) / tileSize).floor();
-    final tileY = ((newPosition.y + size.y / 2) / tileSize).floor();
-  
-  
-    if (tileX >= 0 && tileX < dungeon[0].length && tileY >= 0 && tileY < dungeon.length && dungeon[tileY][tileX] == PATH_TILE) {
-      position.add(delta);
-    }
-  }
-  
   @override
   void update(double dt) {
     super.update(dt);
+    movementStrategy.move(this, dt);
   
     final distanceToPlayer = position.distanceTo(player.position);
   
@@ -90,12 +84,7 @@ abstract class Enemy extends SpriteAnimationComponent with HasGameRef<FlameGame>
       _state = EnemyState.attacking;
       if (!player.invincible) {
         player.lives -= 1;
-        player.invincible = true;
-        player.playerState = PlayerState.damaged;
-        Future.delayed(Duration(seconds: 5), () {
-          player.invincible = false;
-          player.playerState = PlayerState.idle;
-        });
+        player.setState(DamagedState());
       }
     } else if (distanceToPlayer <= 4 * tileSize) {
       // Enemy is close enough to move towards the player
@@ -139,6 +128,15 @@ abstract class Enemy extends SpriteAnimationComponent with HasGameRef<FlameGame>
         }
         break;
     }
+  }
 
+  void move(Vector2 delta) {
+    final newPosition = position + delta;
+    final tileX = ((newPosition.x + size.x / 2) / tileSize).floor();
+    final tileY = ((newPosition.y + size.y / 2) / tileSize).floor();
+
+    if (tileX >= 0 && tileX < dungeon[0].length && tileY >= 0 && tileY < dungeon.length && dungeon[tileY][tileX] == PATH_TILE) {
+      position.add(delta);
+    }
   }
 }
