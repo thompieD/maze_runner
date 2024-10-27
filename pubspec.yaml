@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  flame: ^1.21.0
+  flame_audio: ^2.10.5
 
 dev_dependencies:
   flutter_test:
@@ -25,6 +25,8 @@ flutter:
     - assets/images/orc.png
     - assets/images/hearts.png
     - assets/fonts/PublicPixel-rv0pA.ttf
+    - assets/audio/background_music.mp3
+    - assets/audio/swing.wav
 
   fonts:
     - family: PublicPixel

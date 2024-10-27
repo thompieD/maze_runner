@@ -1,6 +1,7 @@
 import 'package:flame/events.dart';
 import 'dart:html' as html;
 import 'package:flame/game.dart';
+import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'livesdisplay.dart';
@@ -31,6 +32,10 @@ class MazeRunnerGame extends FlameGame with HasKeyboardHandlerComponents, HasCol
   Future<void> onLoad() async {
     await super.onLoad();
     debugMode = false;
+
+    // Load and play background music
+    FlameAudio.bgm.initialize();
+    FlameAudio.loop('background_music.mp3', volume: 0.4);
 
     // Add maze
     maze = Maze(32, 50, 27, this);

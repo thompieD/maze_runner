@@ -2,7 +2,7 @@ import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/sprite.dart';
 import 'package:flame/collisions.dart';
-import 'package:flutter/material.dart';
+import 'package:flame_audio/flame_audio.dart' as audio;  
 import 'package:flutter/services.dart';
 import 'player_state.dart';
 import 'enemy.dart';
@@ -134,6 +134,9 @@ class Player extends SpriteAnimationComponent with HasGameRef<FlameGame>, Keyboa
     if (_state is! AttackingState) {
       setState(AttackingState());
 
+      // Play sword swing sound effect
+      audio.FlameAudio.play('swing.wav');
+
       final attackRange = tileSize.toDouble();
       gameRef.children.whereType<Enemy>().forEach((enemy) {
         if (position.distanceTo(enemy.position) <= attackRange) {
@@ -148,7 +151,7 @@ class Player extends SpriteAnimationComponent with HasGameRef<FlameGame>, Keyboa
         }
       });
 
-      Future.delayed(Duration(seconds: 1), () {
+      Future.delayed(Duration(milliseconds: 600), () {
         setState(IdleState());
       });
     }
