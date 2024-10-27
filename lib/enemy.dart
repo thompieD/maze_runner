@@ -5,6 +5,8 @@ import 'package:flame/collisions.dart';
 import 'dart:math';
 import 'player.dart';
 
+enum EnemyState { idle, walking, attacking, dead }
+
 abstract class Enemy extends SpriteAnimationComponent with HasGameRef<FlameGame>, CollisionCallbacks {
   final double speed;
   final int tileSize;
@@ -12,7 +14,12 @@ abstract class Enemy extends SpriteAnimationComponent with HasGameRef<FlameGame>
   late SpriteAnimation idleAnimation;
   late SpriteAnimation walkAnimation;
   late SpriteAnimation attackAnimation; 
+  late SpriteAnimation deadAnimation;
   late Player player; 
+
+  EnemyState _state = EnemyState.idle;
+  bool _isAttackAnimationPlaying = false;
+  bool _isDeadAnimationPlaying = false;
 
   Enemy(this.speed, this.tileSize, this.dungeon, this.player) : super(size: Vector2(tileSize.toDouble(), tileSize.toDouble()), priority: 0);
 
@@ -24,7 +31,8 @@ abstract class Enemy extends SpriteAnimationComponent with HasGameRef<FlameGame>
     final spriteSheet = await loadSpriteSheet();
     idleAnimation = createCustomAnimation(spriteSheet, row: 0, stepTime: 0.1, from: 0, to: 5);
     walkAnimation = createCustomAnimation(spriteSheet, row: 1, stepTime: 0.1, from: 0, to: 5);
-    attackAnimation = createCustomAnimation(spriteSheet, row: 2, stepTime: 0.1, from: 0, to: 5); // Load attack animation
+    attackAnimation = createCustomAnimation(spriteSheet, row: 2, stepTime: 0.1, from: 0, to: 5); 
+    deadAnimation = createCustomAnimation(spriteSheet, row: 5, stepTime: 0.1, from: 0, to: 3);
 
     // Set the initial animation to idle
     animation = idleAnimation;
@@ -81,27 +89,60 @@ abstract class Enemy extends SpriteAnimationComponent with HasGameRef<FlameGame>
     final distanceToPlayer = position.distanceTo(player.position);
   
     if (distanceToPlayer <= tileSize - 16) {
-      animation = attackAnimation;
+      _state = EnemyState.attacking;
       if (!player.invincible) {
         player.lives -= 1;
         player.invincible = true;
         player.playerState = PlayerState.damaged;
         Future.delayed(Duration(seconds: 1), () {
           player.invincible = false;
-        // Set player state to damaged
           player.playerState = PlayerState.idle;
-          
         });
       }
     } else if (distanceToPlayer <= 4 * tileSize) {
       // Enemy is close enough to move towards the player
+      _state = EnemyState.walking;
       final delta = (player.position - position).normalized() * speed * dt;
       print('Moving enemy. Current position: $position, Player position: ${player.position}, Delta: $delta');
       move(delta);
-      animation = walkAnimation;
     } else {
-      // Enemy is idle
-      animation = idleAnimation;
+      _state = EnemyState.idle;
     }
+
+    // Update animation based on state
+    if (_isAttackAnimationPlaying || _isDeadAnimationPlaying) {
+      // Do not update animation if attack or dead animation is playing
+      return;
+    }
+
+    switch (_state) {
+      case EnemyState.idle:
+        if (animation != idleAnimation) {
+          animation = idleAnimation;
+        }
+        break;
+      case EnemyState.walking:
+        if (animation != walkAnimation) {
+          animation = walkAnimation;
+        }
+        break;
+      case EnemyState.attacking:
+        if (animation != attackAnimation) {
+          animation = attackAnimation;
+        }
+        break;
+      case EnemyState.dead:
+        if (animation != deadAnimation) {
+          animation = deadAnimation;
+          _isDeadAnimationPlaying = true;
+          Future.delayed(Duration(milliseconds: 500), () {
+            _isDeadAnimationPlaying = false;
+            removeFromParent(); // Remove enemy after dead animation
+          });
+        }
+        break;
+    }
+
+    print('enemy animation: ${animation.runtimeType}');
   }
 }
