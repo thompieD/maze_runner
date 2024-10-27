@@ -1,8 +1,13 @@
+import 'dart:ui';
+
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/sprite.dart';
 import 'package:flame/collisions.dart';
-import 'package:flame_audio/flame_audio.dart' as audio;  
+import 'package:flame_audio/flame_audio.dart' as audio;
+import 'package:flame/effects.dart';
+import 'package:flame/particles.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'player_state.dart';
 import 'enemy.dart';
@@ -105,7 +110,7 @@ class Player extends SpriteAnimationComponent with HasGameRef<FlameGame>, Keyboa
     final tileY = ((newPosition.y + size.y / 2) / tileSize).floor();
 
     if (tileX >= 0 && tileX < dungeon[0].length && tileY >= 0 && tileY < dungeon.length && dungeon[tileY][tileX] == PATH_TILE) {
-      position.add(delta);
+      add(MoveEffect.to(newPosition, EffectController(duration: 0.5)));
     }
   }
 
@@ -130,12 +135,34 @@ class Player extends SpriteAnimationComponent with HasGameRef<FlameGame>, Keyboa
     return true;
   }
 
-  void attack() {
+   void attack() {
     if (_state is! AttackingState) {
       setState(AttackingState());
 
       // Play sword swing sound effect
       audio.FlameAudio.play('swing.wav');
+
+      // Add particle effect
+      final particle = ParticleSystemComponent(
+        particle: Particle.generate(
+          count: 20,
+          generator: (i) {
+            final randomOffset = Vector2.random() - Vector2(0.5, 0.5); // Random offset for position
+            final randomSize = 1.0 + (Vector2.random().x * 1.5); // Random size between 1.0 and 2.5
+            return AcceleratedParticle(
+              acceleration: Vector2(0, 0),
+              speed: Vector2.random() * 1.5, // Adjust speed for cloud effect
+              position: position + Vector2(-size.x / 4, size.y / 2) + randomOffset * 20, // More centered and random position
+              child: CircleParticle(
+                radius: randomSize, // Varying radius for each particle
+                lifespan: 1.0,
+                paint: Paint()..color = Colors.grey.withOpacity(0.5), // Semi-transparent grey
+              ),
+            );
+          },
+        ),
+      );
+      gameRef.add(particle);
 
       final attackRange = tileSize.toDouble();
       gameRef.children.whereType<Enemy>().forEach((enemy) {
@@ -151,7 +178,7 @@ class Player extends SpriteAnimationComponent with HasGameRef<FlameGame>, Keyboa
         }
       });
 
-      Future.delayed(Duration(milliseconds: 600), () {
+      Future.delayed(Duration(seconds: 1), () {
         setState(IdleState());
       });
     }

@@ -33,7 +33,7 @@ class MazeRunnerGame extends FlameGame with HasKeyboardHandlerComponents, HasCol
     await super.onLoad();
     debugMode = false;
 
-    // Load and play background music
+    // Load and play background music on loop
     FlameAudio.bgm.initialize();
     FlameAudio.loop('background_music.mp3', volume: 0.4);
 
