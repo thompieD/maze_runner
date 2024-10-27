@@ -4,7 +4,6 @@ import 'package:flame/game.dart';
 import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flame/effects.dart';
 import 'livesdisplay.dart';
 import 'winscreen.dart';
 import 'losescreen.dart';
