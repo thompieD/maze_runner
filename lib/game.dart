@@ -1,15 +1,18 @@
 import 'package:flame/events.dart';
+import 'dart:html' as html;
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:maze_runner/livesdisplay.dart';
-import 'package:maze_runner/winscreen.dart';
-import 'package:maze_runner/losescreen.dart';
-import 'dart:html' as html;
+import 'livesdisplay.dart';
+import 'winscreen.dart';
+import 'losescreen.dart';
 import 'maze.dart';
 import 'player.dart';
 import 'orc.dart';
 import 'dart:math';
+import 'enemy_pool.dart';
+import 'movement_strategy.dart';
+import 'enemy.dart';
 
 class MazeRunnerGame extends FlameGame with HasKeyboardHandlerComponents, HasCollisionDetection {
   final BuildContext context;
@@ -19,6 +22,8 @@ class MazeRunnerGame extends FlameGame with HasKeyboardHandlerComponents, HasCol
   late LivesDisplay livesDisplay;
   OverlayEntry? winOverlay;
   OverlayEntry? loseOverlay;
+
+  final EnemyPool enemyPool = EnemyPool();
 
   MazeRunnerGame(this.context);
 
@@ -44,11 +49,16 @@ class MazeRunnerGame extends FlameGame with HasKeyboardHandlerComponents, HasCol
 
     // Get a random number between 3 and 6 and spawn orcs
     final random = Random();
-    int numOrcs = 3 + random.nextInt(4); // random.nextInt(4) generates a number between 0 and 3, so 3 + 0 to 3 + 3 gives 3 to 6
-    orcs = List.generate(numOrcs, (index) => Orc(50.0, maze.tileSize, maze.dungeon, player));
-    for (Orc orc in orcs) {
-      await add(orc);
-    }
+    int numOrcs = 3 + random.nextInt(4);
+    orcs = List.generate(numOrcs, (index) {
+      final enemy = enemyPool.getEnemy(FollowPlayerMovementStrategy(), 20.0, maze.tileSize, maze.dungeon, player); // Adjusted speed to 20.0
+      add(enemy);
+      return enemy as Orc;
+    });
+  }
+
+  void releaseEnemy(Enemy enemy) {
+    enemyPool.releaseEnemy(enemy);
   }
 
   @override
@@ -92,13 +102,11 @@ class MazeRunnerGame extends FlameGame with HasKeyboardHandlerComponents, HasCol
 
   @override
   KeyEventResult onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
-    // Call the superclass's onKeyEvent method
     final result = super.onKeyEvent(event, keysPressed);
     if (result == KeyEventResult.handled) {
       return result;
     }
 
-    // Handle keyboard events here
     return KeyEventResult.handled;
   }
 }
