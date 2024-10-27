@@ -1,0 +1,62 @@
+Flutter crash report.
+Please report a bug at https://github.com/flutter/flutter/issues.
+
+## command
+
+flutter run --machine --start-paused -d chrome --devtools-server-address http://127.0.0.1:9100/ --target C:\Users\Thomas Laptop\Documents\Projecten\School\maze_runner\lib\main.dart
+
+## exception
+
+HttpException: HttpException: Connection closed before full header was received, uri = http://localhost:53437/devtools/page/41FF5C414FA291D234BF087021D15886
+
+```
+```
+
+## flutter doctor
+
+```
+[✓] Flutter (Channel stable, 3.24.4, on Microsoft Windows [Version 10.0.22631.4317], locale en-US)
+    • Flutter version 3.24.4 on channel stable at C:\Users\Thomas Laptop\flutter
+    • Upstream repository https://github.com/flutter/flutter.git
+    • Framework revision 603104015d (2 days ago), 2024-10-24 08:01:25 -0700
+    • Engine revision db49896cf2
+    • Dart version 3.5.4
+    • DevTools version 2.37.3
+
+[✓] Windows Version (Installed version of Windows is version 10 or higher)
+
+[✗] Android toolchain - develop for Android devices
+    ✗ Unable to locate Android SDK.
+      Install Android Studio from: https://developer.android.com/studio/index.html
+      On first launch it will assist you in installing the Android SDK components.
+      (or visit https://flutter.dev/to/windows-android-setup for detailed instructions).
+      If the Android SDK has been installed to a custom location, please use
+      `flutter config --android-sdk` to update to that location.
+
+
+[✓] Chrome - develop for the web
+    • Chrome at C:\Program Files\Google\Chrome\Application\chrome.exe
+
+[✓] Visual Studio - develop Windows apps (Visual Studio Community 2022 17.11.5)
+    • Visual Studio at C:\Program Files\Microsoft Visual Studio\2022\Community
+    • Visual Studio Community 2022 version 17.11.35327.3
+    • Windows 10 SDK version 10.0.22621.0
+
+[!] Android Studio (not installed)
+    • Android Studio not found; download from https://developer.android.com/studio/index.html
+      (or visit https://flutter.dev/to/windows-android-setup for detailed instructions).
+
+[✓] VS Code (version 1.94.2)
+    • VS Code at C:\Users\Thomas Laptop\AppData\Local\Programs\Microsoft VS Code
+    • Flutter extension version 3.98.0
+
+[✓] Connected device (3 available)
+    • Windows (desktop) • windows • windows-x64    • Microsoft Windows [Version 10.0.22631.4317]
+    • Chrome (web)      • chrome  • web-javascript • Google Chrome 130.0.6723.69
+    • Edge (web)        • edge    • web-javascript • Microsoft Edge 130.0.2849.46
+
+[✓] Network resources
+    • All expected network resources are available.
+
+! Doctor found issues in 2 categories.
+```
