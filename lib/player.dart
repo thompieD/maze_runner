@@ -7,8 +7,12 @@ import 'package:flame/collisions.dart';
 const int PATH_TILE = 0;
 const int WALL_TILE = 1;
 
+enum PlayerState { idle, running, damaged }
+
 class Player extends SpriteAnimationComponent with HasGameRef<FlameGame>, KeyboardHandler, CollisionCallbacks {
   final double speed = 100.0; 
+  int lives = 3;
+  bool invincible = false;
   final int tileSize;
   late List<List<int>> dungeon; 
 
@@ -17,6 +21,10 @@ class Player extends SpriteAnimationComponent with HasGameRef<FlameGame>, Keyboa
 
   late SpriteAnimation idleAnimation;
   late SpriteAnimation runAnimation;
+  late SpriteAnimation damageAnimation;
+
+  PlayerState _state = PlayerState.idle;
+  bool _isDamageAnimationPlaying = false;
 
   Player(this.dungeon, this.tileSize) : super(size: Vector2(tileSize.toDouble(), tileSize.toDouble()), priority: 0);
 
@@ -33,6 +41,7 @@ class Player extends SpriteAnimationComponent with HasGameRef<FlameGame>, Keyboa
     // Create run animation from the sprite sheet at coordinates (1, 0)
     runAnimation = createCustomAnimation(spriteSheet, row: 1, stepTime: 0.1, from: 0, to: 5);
 
+    damageAnimation = createCustomAnimation(spriteSheet, row: 5, stepTime: 0.1, from: 0, to: 4);
     // Set the initial animation to idle
     animation = idleAnimation;
 
@@ -78,17 +87,55 @@ class Player extends SpriteAnimationComponent with HasGameRef<FlameGame>, Keyboa
   void update(double dt) {
     super.update(dt);
     handleInput(dt);
+
+    // Update animation based on state
+    if (_isDamageAnimationPlaying) {
+      // Do not update animation if damage animation is playing
+      return;
+    }
+
+    switch (_state) {
+      case PlayerState.idle:
+        if (animation != idleAnimation) {
+          animation = idleAnimation;
+          print('Switched to idle animation');
+        }
+        break;
+      case PlayerState.running:
+        if (animation != runAnimation) {
+          animation = runAnimation;
+          print('Switched to run animation');
+        }
+        break;
+      case PlayerState.damaged:
+        if (animation != damageAnimation) {
+          animation = damageAnimation;
+          _isDamageAnimationPlaying = true;
+          print('Switched to damage animation');
+          Future.delayed(Duration(seconds: 1), () {
+            _isDamageAnimationPlaying = false;
+            _state = PlayerState.idle; // Reset state to idle after damage animation
+          });
+        }
+        break;
+    }
+
+    print('player animation: ${animation.runtimeType}');
   }
 
   void handleInput(double dt) {
-    if (direction.length > 0) {
-      direction = direction.normalized();
-      animation = runAnimation; // Switch to run animation
-    } else {
-      animation = idleAnimation; // Switch to idle animation
-    }
-    final delta = direction * speed * dt;
-    move(delta);
+      if (direction.length > 0) {
+        direction = direction.normalized();
+        if (_state != PlayerState.damaged) {
+        _state = PlayerState.running; // Switch to running state
+        }
+      } else {
+        if (_state != PlayerState.damaged) {
+        _state = PlayerState.idle; // Switch to idle state
+        }
+      }
+      final delta = direction * speed * dt;
+      move(delta);
   }
 
   void move(Vector2 delta) {
@@ -122,5 +169,13 @@ class Player extends SpriteAnimationComponent with HasGameRef<FlameGame>, Keyboa
     print('Direction: $direction');
 
     return true;
+  }
+
+  // Getter for state
+  PlayerState get playerState => _state;
+
+  // Setter for state
+  set playerState(PlayerState newState) {
+    _state = newState;
   }
 }

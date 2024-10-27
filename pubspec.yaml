@@ -22,5 +22,6 @@ flutter:
   assets:
     - assets/images/dungeon_tileset.png
     - assets/images/soldier.png
+    - assets/images/orc.png
 
   uses-material-design: true
