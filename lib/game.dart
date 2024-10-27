@@ -12,6 +12,7 @@ class MazeRunnerGame extends FlameGame with HasKeyboardHandlerComponents {
   @override
   Future<void> onLoad() async {
     await super.onLoad();
+    debugMode = true;
 
     // Add maze
     maze = Maze(32, 50, 27, this);
