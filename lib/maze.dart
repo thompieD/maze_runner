@@ -143,7 +143,7 @@ class Maze extends Component {
     if (!adjacentToPath) {
       // Change it from WALL_TILE to VOID_TILE
       dungeon[y][x] = VOID_TILE;
-      addTile(x, y, 7, 8, priority: 1); // Assuming (7, 8) is the void tile sprite coordinates
+      addTile(x, y, 7, 8, priority: 1);
       return;
     }
 
@@ -225,7 +225,7 @@ class Maze extends Component {
         break;
     }
 
-    addTile(x, y, spriteX, spriteY, priority: 1); // Higher priority for walls
+    addTile(x, y, spriteX, spriteY, priority: 1); 
   }
 
   // Add a tile to the game

@@ -18,7 +18,7 @@ class Player extends SpriteAnimationComponent with HasGameRef<FlameGame>, Keyboa
   late SpriteAnimation idleAnimation;
   late SpriteAnimation runAnimation;
 
-  Player(this.dungeon, this.tileSize) : super(size: Vector2(tileSize.toDouble() * 5, tileSize.toDouble() * 5), priority: 0); // Set lower priority
+  Player(this.dungeon, this.tileSize) : super(size: Vector2(tileSize.toDouble(), tileSize.toDouble()), priority: 0);
 
   @override
   Future<void> onLoad() async {
@@ -28,10 +28,10 @@ class Player extends SpriteAnimationComponent with HasGameRef<FlameGame>, Keyboa
     );
 
     // Create idle animation from the sprite sheet at coordinates (0, 0)
-    idleAnimation = spriteSheet.createAnimation(row: 0, stepTime: 0.1, from: 0, to: 5);
+    idleAnimation = createCustomAnimation(spriteSheet, row: 0, stepTime: 0.1, from: 0, to: 5);
 
     // Create run animation from the sprite sheet at coordinates (1, 0)
-    runAnimation = spriteSheet.createAnimation(row: 1, stepTime: 0.1, from: 0, to: 5);
+    runAnimation = createCustomAnimation(spriteSheet, row: 1, stepTime: 0.1, from: 0, to: 5);
 
     // Set the initial animation to idle
     animation = idleAnimation;
@@ -40,10 +40,24 @@ class Player extends SpriteAnimationComponent with HasGameRef<FlameGame>, Keyboa
     position = findPathTile();
 
     // Add a hitbox for collision detection
-    hitbox = RectangleHitbox.relative(Vector2(1, 1), parentSize: size); // Slightly larger hitbox
+    hitbox = RectangleHitbox.relative(Vector2(1, 1), parentSize: size); 
     add(hitbox);
 
     print('Player initial position: $position');
+  }
+
+  SpriteAnimation createCustomAnimation(SpriteSheet spriteSheet, {required int row, required double stepTime, required int from, required int to}) {
+    final frames = <SpriteAnimationFrame>[];
+    for (int i = from; i <= to; i++) {
+      final sprite = spriteSheet.getSprite(row, i);
+      final customSprite = Sprite(
+        sprite.image,
+        srcPosition: sprite.srcPosition + Vector2(34, 34), 
+        srcSize: Vector2(32, 32),
+      );
+      frames.add(SpriteAnimationFrame(customSprite, stepTime));
+    }
+    return SpriteAnimation(frames);
   }
 
   Vector2 findPathTile() {
